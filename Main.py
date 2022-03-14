@@ -11,24 +11,33 @@
 
 import numpy as np
 
-def get_item_useful_weight():
-    text_file = open("Program2Input.txt", "r")
-    data = text_file.readline()
-    text_file.close()
-    print(data)
 
-def total_useful_weight(cargo, useful, weights, max_size):
+def get_item_utlity_weight():
+    text_file = open("Program2Input.txt", "r")
+    lines = text_file.readlines()
+
+    utlity_arr = []
+    weight_arr = []
+    for line in lines:
+        utlity_arr.append(float(line.split()[0]))
+        weight_arr.append(float(line.split()[1]))
+
+    text_file.close()
+    return utlity_arr, weight_arr
+
+
+def total_utlity_weight(cargo, values, weights, max_weight):
     # total usefulness and weight of a specified item
-    usefulness = 0.0  # total usefulness of cargo
+    utlity = 0.0  # total usefulness of cargo
     weight = 0.0  # total weight of cargo
     n = len(cargo)
     for i in range(n):
         if cargo[i] == 1:
-            usefulness += useful[i]
+            utlity += values[i]
             weight += weights[i]
-    if weight > max_size:  # too heavy to fit in vehicle
+    if weight > max_weight:  # too heavy to fit in vehicle
         usefulness = 0.0
-    return (usefulness, weight)
+    return utlity, weight
 
 
 def adjacent(cargo, rnd):
@@ -42,21 +51,21 @@ def adjacent(cargo, rnd):
     return result
 
 
-def solve(n_items, rnd, values, sizes, max_size, max_iter, start_temperature, alpha):
+def solve(n_items, rnd, values, weights, max_weight, max_iter, start_temperature, alpha):
     # solve using simulated annealing
     curr_temperature = start_temperature
     curr_cargo = np.ones(n_items, dtype=np.int64)
     print("Initial guess: ")
     print(curr_cargo)
 
-    (curr_valu, curr_size) = total_useful_weight(curr_cargo, values, sizes, max_size)
+    (curr_valu, curr_size) = total_utlity_weight(curr_cargo, values, weights, max_weight)
     iteration = 0
-    interval = (int)(max_iter / 10)
+    interval = (int)(max_iter / 400)
     while iteration < max_iter:
         # pct_iters_left = \
         #  (max_iter - iteration) / (max_iter * 1.0)
         adj_cargo = adjacent(curr_cargo, rnd)
-        (adj_v, _) = total_useful_weight(adj_cargo, values, sizes, max_size)
+        (adj_v, _) = total_utlity_weight(adj_cargo, values, weights, max_weight)
 
         if adj_v > curr_valu:  # better so accept adjacent
             curr_cargo = adj_cargo;
@@ -89,19 +98,21 @@ def main():
     print("Goal is to maximize value subject \
     to max size constraint ")
 
-    values = np.array([79, 32, 47, 18, 26, 85, 33, 40, 45, 59])
-    sizes = np.array([85, 26, 48, 21, 22, 95, 43, 45, 55, 52])
-    max_size = 101
+    items = get_item_utlity_weight()
 
-    print("\nItem values: ")
-    print(values)
-    print("\nItem sizes: ")
-    print(sizes)
-    print("\nMax total size = %d " % max_size)
+    utlity_values = np.array(items[0])
+    weights = np.array(items[1])
+    max_weight = 100
+
+    print("\nItem usefulness values: ")
+    print(utlity_values)
+    print("\nItem weights: ")
+    print(weights)
+    print("\nMax total weight = %d " % max_weight)
 
     rnd = np.random.RandomState(5)  # 3 .98 = 117,100
-    max_iter = 1000
-    start_temperature = 10000.0
+    max_iter = 4000
+    start_temperature = 40000.0
     alpha = 0.98
 
     print("\nSettings: ")
@@ -110,18 +121,16 @@ def main():
     print("alpha = %0.2f " % alpha)
 
     print("\nStarting solve() ")
-    cargo = solve(10, rnd, values, sizes, max_size, max_iter, start_temperature, alpha)
+    cargo = solve(400, rnd, utlity_values, weights, max_weight, max_iter, start_temperature, alpha)
     print("Finished solve() ")
 
     print("\nBest cargo found: ")
     print(cargo)
-    (v, s) = total_useful_weight(cargo, values, sizes, max_size)
-    print("\nTotal value of packing = %0.1f " % v)
-    print("Total size  of packing = %0.1f " % s)
+    (v, s) = total_utlity_weight(cargo, utlity_values, weights, max_weight)
+    print("\nTotal value of cargo = %0.1f " % v)
+    print("Total weight of cargo = %0.1f " % s)
 
     print("\nEnd demo ")
-
-    get_item_useful_weight()
 
 
 if __name__ == "__main__":
