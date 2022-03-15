@@ -92,13 +92,13 @@ def anneal(totalItems, rnd, values, weights, max_weight, maxIterations, start_te
         currMin = 1000 - currentUtility
         neighborMin = 1000 - neighborUtility
         if neighborMin < currMin:  # better so accept neighbor
-            currentCargo = neighborCargo;
+            currentCargo = neighborCargo
             currentUtility = neighborUtility
         else:  # neighbor cargo is worse
             acceptProbability = np.exp((neighborUtility - currentUtility) / curr_temperature)
             probability = rnd.random()
             if probability < acceptProbability:  # accept worse cargo anyway
-                currentCargo = neighborCargo;
+                currentCargo = neighborCargo
                 currentUtility = neighborUtility
                 # else don't accept
 
@@ -160,3 +160,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
