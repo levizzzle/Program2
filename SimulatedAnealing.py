@@ -9,7 +9,7 @@ class SimulatedAnnealing:
     rnd = np.random.RandomState(5)
     totalItems = 0
     weightLimit = 500
-    startTemp = 120
+    startTemp = 200
     adjustTemp = 0.85
     overweightPenalty = 20
     interval = 4000
@@ -20,24 +20,19 @@ class SimulatedAnnealing:
 
     cargoValue, cargoWeight = 0, 0
 
-    # def __init__(self)
-    #     print("XXXXXXXXXXXXXXXXXXXX")
-    #     (self.itemValues, self.itemWeights, self.itemScore) = self.getItemData()
-    #     self.totalItems = len(self.itemValues)
-    #     self.initializeCargo()
-
-    @classmethod
-    def initializeCargo(cls):
-        (cls.itemValues, cls.itemWeights, cls.itemScore) = cls.getItemData()
-        cls.totalItems = len(cls.itemValues)
-        newCargo = np.zeros(cls.totalItems, dtype=np.int64)
+    @staticmethod
+    def initializeCargo(self):
+        (self.itemValues, self.itemWeights, self.itemScore) = self.getItemData()
+        self.totalItems = len(self.itemValues)
+        newCargo = np.zeros(self.totalItems, dtype=np.int64)
 
         for x in range(20):
-            newCargo[cls.rnd.randint(cls.totalItems)] = 1
-        return newCargo
+            newCargo[self.rnd.randint(self.totalItems)] = 1
 
-    @classmethod
-    def getItemData(cls):
+        self.cargo = newCargo
+
+    @staticmethod
+    def getItemData():
         textFile = open("Program2Input.txt", "r")
         lines = textFile.readlines()
 
@@ -52,70 +47,65 @@ class SimulatedAnnealing:
         textFile.close()
         return values, weights, scores
 
-    @classmethod
-    def calculateValueWeight(cls):
+    @staticmethod
+    def calculateValueWeight(self, cargo):
         totalValue, totalWeight, overweight = 0.0, 0.0, 0.0
 
-        for index in range(cls.totalItems):
-            if cls.cargo[index] == 1:
-                totalValue += cls.itemValues[index]
-                totalWeight += cls.itemWeights[index]
+        for index in range(self.totalItems):
+            if cargo[index] == 1:
+                totalValue += self.itemValues[index]
+                totalWeight += self.itemWeights[index]
 
-        if totalWeight > cls.weightLimit:  # too heavy to fit in vehicle
-            overweight = totalWeight - cls.weightLimit
-            totalValue -= (overweight * cls.overweightPenalty)
+        if totalWeight > self.weightLimit:  # too heavy to fit in vehicle
+            overweight = totalWeight - self.weightLimit
+            totalValue -= (overweight * self.overweightPenalty)
         return totalValue, totalWeight
 
-    @classmethod
-    def getNeighbor(cls):
-        neighbor = np.copy(cls.cargo)
-        index = cls.rnd.randint(cls.totalItems)
-
+    @staticmethod
+    def getNeighbor(self):
+        neighbor = np.copy(self.cargo)
+        index = self.rnd.randint(self.totalItems)
         if neighbor[index] == 0:
             neighbor[index] = 1
         elif neighbor[index] == 1:
             neighbor[index] = 0
         return neighbor
 
-    @classmethod
-    def anneal(cls):
+    @staticmethod
+    def anneal(self):
         print("Initial Cargo Stored: ")
-        print(cls.cargo)
+        print(self.cargo, "\n")
 
         iteration = 0
         trackerValue = 0
-        currentTemp = cls.startTemp
-        (cls.cargoValue, cls.cargoWeight) = cls.calculateValueWeight()
+        currentTemp = self.startTemp
+        (self.cargoValue, self.cargoWeight) = self.calculateValueWeight(self, self.cargo)
 
-        while iteration < cls.maxIterations:
-            cls.neighbor = cls.getNeighbor()
-            (neighborValue, neighborWeight) = cls.calculateValueWeight()
+        while iteration < self.maxIterations:
+            self.neighbor = self.getNeighbor(self)
+            (neighborValue, neighborWeight) = self.calculateValueWeight(self, self.neighbor)
 
-            cargoMin = 1000 - cls.cargoValue
+            cargoMin = 1000 - self.cargoValue
             neighborMin = 1000 - neighborValue
             if neighborMin < cargoMin:
-                cls.cargo = cls.neighbor
-                cls.cargoValue = neighborValue
+                self.cargo = self.neighbor
+                self.cargoValue = neighborValue
             else:
-                acceptProbability = np.exp((neighborValue - cls.cargoValue) / currentTemp)
-                probability = cls.rnd.random()
+                acceptProbability = np.exp((neighborValue - self.cargoValue) / currentTemp)
+                probability = self.rnd.random()
                 if probability < acceptProbability:
-                    cls.cargo = cls.neighbor
-                    cls.cargoValue = neighborValue
+                    self.cargo = self.neighbor
+                    self.cargoValue = neighborValue
 
-            if iteration % cls.interval == 0:
+
+            if iteration % self.interval == 0:
                 print("iter = %6d : curr value = %7.0f : curr temp = %10.2f "
-                      % (iteration, cls.cargoValue, currentTemp))
-                if cls.cargoValue == trackerValue:
-                    print("BREAK")
+                      % (iteration, self.cargoValue, currentTemp))
+                if trackerValue == self.cargoValue:
                     break
                 else:
-                    trackerValue = cls.cargoValue
-                    currentTemp *= cls.adjustTemp
+                    trackerValue = self.cargoValue
+                    currentTemp *= self.adjustTemp
             iteration += 1
 
-        return cls.cargo
-
-
-def __init__():
-    sa = SimulatedAnnealing
+        return self.cargo
