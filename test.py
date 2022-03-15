@@ -110,11 +110,9 @@
 #
 #         return self.cargo
 
-
 import SimulatedAnealing as SA
 
 def main():
-    SA = SA
     SA.initializeCargo(SA)
 
     print("\nItem utility values: ")
