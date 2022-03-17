@@ -9,8 +9,8 @@ class SimulatedAnnealing:
     rnd = np.random.RandomState(5)
     totalItems = 0
     weightLimit = 500
-    startTemp = 120
-    adjustTemp = 0.85
+    startTemp = 182
+    adjustTemp = 0.86
     overweightPenalty = 20
     dataInterval = 4000
     breakInterval = 40000
@@ -22,7 +22,7 @@ class SimulatedAnnealing:
     cargoValue, cargoWeight = 0, 0
 
     def initializeCargo(self):
-        (self.itemValues, self.itemWeights, self.itemScore) = self.getItemData(self)
+        (self.itemValues, self.itemWeights, self.itemScore) = self.getItemData()
         self.totalItems = len(self.itemValues)
         newCargo = np.zeros(self.totalItems, dtype=np.int64)
 
@@ -75,7 +75,7 @@ class SimulatedAnnealing:
         iteration = 0
         trackerValue = 0
         currentTemp = self.startTemp
-        (self.cargoValue, self.cargoWeight) = self.calculateValueWeight(self, self.cargo)
+        (self.cargoValue, self.cargoWeight) = self.calculateValueWeight(self.cargo)
 
         def setNeighbor():
             self.cargo = self.neighbor
@@ -83,8 +83,8 @@ class SimulatedAnnealing:
             self.cargoWeight = neighborWeight
 
         while iteration < self.maxIterations:
-            self.neighbor = self.getNeighbor(self)
-            (neighborValue, neighborWeight) = self.calculateValueWeight(self, self.neighbor)
+            self.neighbor = self.getNeighbor()
+            (neighborValue, neighborWeight) = self.calculateValueWeight(self.neighbor)
 
             cargoMin = 1000 - self.cargoValue
             neighborMin = 1000 - neighborValue
@@ -100,7 +100,6 @@ class SimulatedAnnealing:
                 currentTemp *= self.adjustTemp
                 print("iteration = %6d  ---|>  utility value = %7.1f       weight = %5.1f       temperature = %5.3f "
                       % (iteration, self.cargoValue, self.cargoWeight, currentTemp))
-                # print("Tracker: %7.1f    Value: %7.1f" % (trackerValue, self.cargoValue))
 
             if iteration % self.breakInterval == 0:
                 if trackerValue == self.cargoValue:
@@ -113,8 +112,8 @@ class SimulatedAnnealing:
 
 
 def main():
-    sa = SimulatedAnnealing
-    sa.initializeCargo(sa)
+    sa = SimulatedAnnealing()
+    # sa.initializeCargo()
 
     print("\nItem utility values: ")
     print(sa.itemValues)
@@ -124,22 +123,31 @@ def main():
     print("Total items = %d " % sa.totalItems)
 
     print("\nSettings: ")
-    # print("maxIterations = %d " % maxIterations)
     print("Starting Temperature = %0.1f " % sa.startTemp)
     print("Temperature Adjust = %0.2f " % sa.adjustTemp)
     print("Adjust Interval = %d " % sa.dataInterval)
     print("Break Interval = %d " % sa.breakInterval)
-
-
+    # file = open("results.txt", "a")
+    results = []
+    # for change in range(75, 95):
+    #     for temp in range(50, 250):
+    #         if change % 2 == 0 and temp % 2 == 0:
+    sa.initializeCargo()
+    # sa.adjustTemp = float(change/100)
+    # sa.startTemp = temp
     print("\nStarting Anneal() ")
-    cargo = sa.anneal(sa)
+    cargo = sa.anneal()
     print("Finished Anneal() ")
 
     print("\nBest cargo found: ")
     print(cargo)
-    (value, weight) = sa.calculateValueWeight(sa, sa.cargo)
+    (value, weight) = sa.calculateValueWeight(sa.cargo)
     print("\nTotal value of cargo = %0.1f " % value)
     print("Total weight of cargo = %0.1f " % weight)
+    # results.append(["Change: %f, Temp: %f, Value: %f, Weight: %f" % (change, temp, value, weight)])
+    # file.write("Change: %f, Temp: %f, Value: %f, Weight: %f\n" % (change, temp, value, weight))
+    # print(["Change: %f, Temp: %f, Value: %f, Weight: %f" % (change, temp, value, weight)])
+    # file.close()
 
 
 if __name__ == "__main__":
